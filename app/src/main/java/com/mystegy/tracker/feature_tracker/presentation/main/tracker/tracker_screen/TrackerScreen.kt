@@ -1,10 +1,14 @@
 package com.mystegy.tracker.feature_tracker.presentation.main.tracker.tracker_screen
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,8 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mystegy.tracker.feature_tracker.domain.models.GroupAddOrSelect
 import com.mystegy.tracker.feature_tracker.domain.models.TrackerItem
 import com.mystegy.tracker.feature_tracker.presentation.main.destinations.*
+import com.mystegy.tracker.feature_tracker.presentation.main.tracker.add_edit_group_screen.AddEditGroupUIEvent
 import com.mystegy.tracker.feature_tracker.presentation.main.tracker.tracker_screen.components.GroupCard
 import com.mystegy.tracker.feature_tracker.presentation.main.tracker.tracker_screen.components.TrackerCard
 import com.ramcosta.composedestinations.annotation.Destination
@@ -23,7 +29,9 @@ import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.flow.collectLatest
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalLayoutApi::class
+)
 @RootNavGraph(start = true)
 @Destination
 @Composable
@@ -72,73 +80,173 @@ fun TrackerScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                uiState.value.trackers.groupBy { it.group }.entries.forEach { (key, trackers) ->
-                    if (key.isBlank()) {
-                        items(items = trackers, key = { it.id }) { tracker ->
-                            TrackerCard(
-                                modifier = Modifier
-                                    .width(176.dp)
-                                    .animateItemPlacement(),
-                                tracker = tracker,
-                                onEdit = {
-                                    navigator.navigate(
-                                        AddEditTrackerScreenDestination(
-                                            tracker = tracker,
-                                            group = "",
-                                            edit = true
-                                        )
-                                    )
-                                },
-                                onDelete = {
-                                    viewModel.onEvent(TrackerUIEvent.DeleteTracker(tracker.id))
-                                },
+                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TrackerDisplayType.values().forEach { displayType ->
+                            FilterChip(
+                                selected = uiState.value.trackerDisplayType == displayType,
                                 onClick = {
-                                    navigator.navigate(TrackerDetailScreenDestination(tracker))
-                                },
-                                onAdd = {
-                                    navigator.navigate(
-                                        AddEditItemScreenDestination(
-                                            tracker = tracker,
-                                            edit = false,
-                                            item = TrackerItem()
-                                        )
+                                    viewModel.onEvent(
+                                        TrackerUIEvent.SelectTrackerDisplayType(displayType)
                                     )
                                 },
-                                onMoveToGroup = {
-                                    navigator.navigate(AddEditGroupScreenDestination("", false, tracker))
+                                label = {
+                                    Text(text = displayType.name)
                                 },
-                                onRemoveFromGroup = {
-
-                                }
-                            )
-
-                        }
-
-                    } else {
-                        item {
-                            GroupCard(
-                                modifier = Modifier
-                                    .width(176.dp)
-                                    .height(211.dp)
-                                    .animateItemPlacement(),
-                                trackers = trackers,
-                                group = key,
-                                track = { index ->
-                                    navigator.navigate(
-                                        AddEditItemScreenDestination(
-                                            tracker = trackers[index],
-                                            edit = false,
-                                            item = TrackerItem()
-                                        )
-                                    )
-                                },
-                                onClick = {
-                                    navigator.navigate(GroupTrackersScreenDestination(it))
+                                leadingIcon = {
+                                    if (uiState.value.trackerDisplayType == displayType)
+                                        Icon(imageVector = Icons.Default.Done, contentDescription = null)
                                 }
                             )
                         }
                     }
                 }
+                when(uiState.value.trackerDisplayType) {
+                    TrackerDisplayType.All -> {
+                        uiState.value.trackers.groupBy { it.group }.entries.forEach { (key, trackers) ->
+                            if (key.isBlank()) {
+                                items(items = trackers, key = { it.id }) { tracker ->
+                                    TrackerCard(
+                                        modifier = Modifier
+                                            .width(176.dp)
+                                            .animateItemPlacement(),
+                                        tracker = tracker,
+                                        onEdit = {
+                                            navigator.navigate(
+                                                AddEditTrackerScreenDestination(
+                                                    tracker = tracker,
+                                                    group = "",
+                                                    edit = true
+                                                )
+                                            )
+                                        },
+                                        onDelete = {
+                                            viewModel.onEvent(TrackerUIEvent.DeleteTracker(tracker.id))
+                                        },
+                                        onClick = {
+                                            navigator.navigate(TrackerDetailScreenDestination(tracker))
+                                        },
+                                        onAdd = {
+                                            navigator.navigate(
+                                                AddEditItemScreenDestination(
+                                                    tracker = tracker,
+                                                    edit = false,
+                                                    item = TrackerItem()
+                                                )
+                                            )
+                                        },
+                                        onMoveToGroup = {
+                                            navigator.navigate(AddEditGroupScreenDestination("", false, tracker))
+                                        },
+                                        onRemoveFromGroup = {
+
+                                        }
+                                    )
+
+                                }
+
+                            } else {
+                                item {
+                                    GroupCard(
+                                        modifier = Modifier
+                                            .width(176.dp)
+                                            .height(211.dp)
+                                            .animateItemPlacement(),
+                                        trackers = trackers,
+                                        group = key,
+                                        track = { index ->
+                                            navigator.navigate(
+                                                AddEditItemScreenDestination(
+                                                    tracker = trackers[index],
+                                                    edit = false,
+                                                    item = TrackerItem()
+                                                )
+                                            )
+                                        },
+                                        onClick = {
+                                            navigator.navigate(GroupTrackersScreenDestination(it))
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    TrackerDisplayType.Trackers -> {
+                        uiState.value.trackers.groupBy { it.group }.entries.forEach { (key, trackers) ->
+                            if (key.isBlank()) {
+                                items(items = trackers, key = { it.id }) { tracker ->
+                                    TrackerCard(
+                                        modifier = Modifier
+                                            .width(176.dp)
+                                            .animateItemPlacement(),
+                                        tracker = tracker,
+                                        onEdit = {
+                                            navigator.navigate(
+                                                AddEditTrackerScreenDestination(
+                                                    tracker = tracker,
+                                                    group = "",
+                                                    edit = true
+                                                )
+                                            )
+                                        },
+                                        onDelete = {
+                                            viewModel.onEvent(TrackerUIEvent.DeleteTracker(tracker.id))
+                                        },
+                                        onClick = {
+                                            navigator.navigate(TrackerDetailScreenDestination(tracker))
+                                        },
+                                        onAdd = {
+                                            navigator.navigate(
+                                                AddEditItemScreenDestination(
+                                                    tracker = tracker,
+                                                    edit = false,
+                                                    item = TrackerItem()
+                                                )
+                                            )
+                                        },
+                                        onMoveToGroup = {
+                                            navigator.navigate(AddEditGroupScreenDestination("", false, tracker))
+                                        },
+                                        onRemoveFromGroup = {
+
+                                        }
+                                    )
+
+                                }
+
+                            }
+                        }
+                    }
+                    TrackerDisplayType.Groups -> {
+                        uiState.value.trackers.groupBy { it.group }.entries.forEach { (key, trackers) ->
+                            if (key.isNotBlank()) {
+                                item {
+                                    GroupCard(
+                                        modifier = Modifier
+                                            .width(176.dp)
+                                            .height(211.dp)
+                                            .animateItemPlacement(),
+                                        trackers = trackers,
+                                        group = key,
+                                        track = { index ->
+                                            navigator.navigate(
+                                                AddEditItemScreenDestination(
+                                                    tracker = trackers[index],
+                                                    edit = false,
+                                                    item = TrackerItem()
+                                                )
+                                            )
+                                        },
+                                        onClick = {
+                                            navigator.navigate(GroupTrackersScreenDestination(it))
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
             }
         }
     }

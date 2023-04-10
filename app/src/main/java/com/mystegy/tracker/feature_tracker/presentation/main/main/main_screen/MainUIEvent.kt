@@ -5,6 +5,8 @@ import com.mystegy.tracker.feature_tracker.domain.models.Tracker
 
 sealed class MainUIEvent{
     object ExportDialogVisibility: MainUIEvent()
+    object SelectAllTracker: MainUIEvent()
+    object ClearAllSelectedTracker: MainUIEvent()
     data class Tracker(val tracker: com.mystegy.tracker.feature_tracker.domain.models.Tracker): MainUIEvent()
 }
 data class MainUIState(

@@ -72,11 +72,13 @@ class AddEditGroupScreenViewModel @Inject constructor(
 
     private fun getTrackers() =
         repository.getTrackers().onEach { trackers ->
+            val groups = trackers.map { it.group }.distinct().toMutableList().apply {
+                remove("")
+            }
             _uiState.value = _uiState.value.copy(
                 trackers = trackers,
-                groups = trackers.map { it.group }.distinct().toMutableList().apply {
-                    remove("")
-                }
+                groups = groups,
+                groupAddOrSelect = if (groups.isNotEmpty() && !_uiState.value.arg.edit) GroupAddOrSelect.SelectExistingGroup else GroupAddOrSelect.AddNewGroup
             )
         }.launchIn(viewModelScope)
 

@@ -127,7 +127,10 @@ fun MainScreen(
 
     if (uiState.value.exportDialogVisible) {
         AlertDialog(
-            onDismissRequest = { viewModel.onEvent(MainUIEvent.ExportDialogVisibility) },
+            onDismissRequest = {
+                viewModel.onEvent(MainUIEvent.ExportDialogVisibility)
+                viewModel.onEvent(MainUIEvent.ClearAllSelectedTracker)
+            },
             title = { Text(text = "Export") },
             confirmButton = {
                 TextButton(onClick = {
@@ -150,6 +153,7 @@ fun MainScreen(
             dismissButton = {
                 TextButton(onClick = {
                     viewModel.onEvent(MainUIEvent.ExportDialogVisibility)
+                    viewModel.onEvent(MainUIEvent.ClearAllSelectedTracker)
                 }) {
                     Text(text = "Cancel")
                 }
@@ -161,7 +165,19 @@ fun MainScreen(
                 LazyColumn {
                     item {
                         Column {
-                            Text(text = "Select tracker to be exported")
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = "Select tracker to be exported")
+                                if (uiState.value.trackers.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    TextButton(onClick = {
+                                        viewModel.onEvent(MainUIEvent.SelectAllTracker)
+                                    }) {
+                                        Text(text = "Select All")
+                                    }
+                                }
+
+                            }
+
                             Spacer(modifier = Modifier.padding(8.dp))
                             if (uiState.value.trackers.isEmpty()) {
                                 Text(text = "No trackers available")
@@ -201,7 +217,10 @@ fun MainScreen(
     ) {
         Scaffold(
             topBar = {
-                if (state.first && !navController.isRouteOnBackStack(TrackerDetailScreenDestination) && !navController.isRouteOnBackStack(GroupTrackersScreenDestination)) {
+                if (state.first && !navController.isRouteOnBackStack(TrackerDetailScreenDestination) && !navController.isRouteOnBackStack(
+                        GroupTrackersScreenDestination
+                    )
+                ) {
                     TopAppBar(
                         title = { Text(text = state.second.label) },
                         navigationIcon = {
@@ -252,6 +271,7 @@ fun MainScreen(
                                         )
                                     }
                                 }
+
                                 Nav.Graph -> {
                                     IconButton(onClick = {
                                         navController.navigate(
@@ -273,6 +293,7 @@ fun MainScreen(
                                         )
                                     }
                                 }
+
                                 Nav.Else -> {
 
                                 }

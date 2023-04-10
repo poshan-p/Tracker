@@ -1,5 +1,6 @@
 package com.mystegy.tracker.feature_tracker.presentation.main.main.main_screen
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -47,6 +48,7 @@ class MainScreenViewModel @Inject constructor(
                 _uiState.value =
                     _uiState.value.copy(exportDialogVisible = !_uiState.value.exportDialogVisible)
             }
+
             is MainUIEvent.Tracker -> {
                 _uiState.value = _uiState.value.copy(
                     selectedTrackers = _uiState.value.selectedTrackers.toMutableList().apply {
@@ -59,6 +61,18 @@ class MainScreenViewModel @Inject constructor(
                 )
 
             }
+
+            MainUIEvent.SelectAllTracker -> {
+                _uiState.value = _uiState.value.copy(
+                    selectedTrackers = _uiState.value.trackers
+                )
+            }
+
+            MainUIEvent.ClearAllSelectedTracker -> {
+                _uiState.value = _uiState.value.copy(
+                    selectedTrackers = emptyList()
+                )
+            }
         }
     }
 
@@ -69,33 +83,38 @@ class MainScreenViewModel @Inject constructor(
 
     fun readFromCSV(inputStream: InputStream) = viewModelScope.launch(Dispatchers.Default) {
         val result = inputStream.readFromCSV()
+        var group = ""
         result.forEach { value ->
             insertTracker(
                 Tracker(
                     id = 0,
                     title = value.key,
                     description = "",
-                    items = value.value.map { TrackerItem(
-                        id = it.id,
-                        reps = it.reps,
-                        weight = it.weight,
-                        volume = it.volume,
-                        note = it.note,
-                        localDateTime = it.localDateTime
-                    ) },
+                    items = value.value.map {
+                        group = it.group
+                        TrackerItem(
+                            id = it.id,
+                            reps = it.reps,
+                            weight = it.weight,
+                            volume = it.volume,
+                            note = it.note,
+                            localDateTime = it.localDateTime
+                        )
+                    },
                     hasDefaultValues = false,
                     defaultRep = 1,
                     defaultWeight = 1.0,
-                    group = ""
+                    group = group
                 )
             )
         }
     }
+
     fun writeToCSV(outputStream: OutputStream) = viewModelScope.launch(Dispatchers.Default) {
         outputStream.writeToCSV(_uiState.value.selectedTrackers)
     }
 
-    private suspend fun insertTracker(tracker: Tracker){
+    private suspend fun insertTracker(tracker: Tracker) {
         repository.insertTracker(tracker)
     }
 }

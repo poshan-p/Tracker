@@ -43,6 +43,12 @@ class TrackerScreenViewModel @Inject constructor(
             is TrackerUIEvent.DeleteTracker -> {
                 deleteTracker(event.id)
             }
+
+            is TrackerUIEvent.SelectTrackerDisplayType -> {
+                _uiState.value = _uiState.value.copy(
+                    trackerDisplayType = event.trackerDisplayType
+                )
+            }
         }
     }
 

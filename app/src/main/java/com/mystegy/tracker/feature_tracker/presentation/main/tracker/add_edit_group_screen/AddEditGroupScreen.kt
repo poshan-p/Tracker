@@ -1,5 +1,6 @@
 package com.mystegy.tracker.feature_tracker.presentation.main.tracker.add_edit_group_screen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -101,6 +102,11 @@ fun AddEditGroupScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clickable {
+                                    viewModel.onEvent(
+                                        AddEditGroupUIEvent.SelectGroup(group)
+                                    )
+                                }
                                 .padding(horizontal = 16.dp, vertical = 4.dp)
                         ) {
                             Checkbox(

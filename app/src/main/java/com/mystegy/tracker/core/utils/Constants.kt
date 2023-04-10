@@ -1,6 +1,7 @@
 package com.mystegy.tracker.core.utils
 
 import android.R
+import android.util.Log
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.DialogProperties
 import com.mystegy.tracker.feature_tracker.domain.models.Tracker
@@ -52,14 +53,14 @@ fun csvNameGenerator() =
     "Tracker-${LocalDateTime.now().displayFormat()} ${UUID.randomUUID().toString().take(5)}.csv"
 
 fun OutputStream.writeToCSV(trackers: List<Tracker>) {
-    val header = "Tracker Title, Timestamp, Reps, Weight, Volume, Note\n"
+    val header = "Tracker Title, Timestamp, Reps, Weight, Volume, Note, Group\n"
     write(header.toByteArray())
     var content = ""
     trackers.sortedBy { it.title }.forEach { tracker ->
         tracker.items.forEach { trackerItem ->
             content += "${tracker.title},${
                 trackerItem.localDateTime.toLocalDateTime().displayFormat()
-            },${trackerItem.reps},${trackerItem.weight},${trackerItem.volume},${trackerItem.note}\n"
+            },${trackerItem.reps},${trackerItem.weight},${trackerItem.volume},${trackerItem.note},${tracker.group}\n"
         }
     }
     write(content.toByteArray())
@@ -77,12 +78,12 @@ fun InputStream.readFromCSV(): Map<String, List<TrackerItemCSV>> {
             val tokens = line.split(",".toRegex()).toTypedArray()
             val title = tokens.getOrElse(0) { "" }
             val localDateTime =
-                tokens[1].toLocalDateTime(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm"))
-                    .toString()
+                tokens[1].smartLocalDateTimeParse().toString()
             val reps = tokens[2].toIntOrNull() ?: 1
             val weight = tokens[3].toDoubleOrNull() ?: 1.0
             val volume = tokens[4].toDoubleOrNull() ?: 1.0
             val note = tokens.getOrElse(5) { "" }
+            val group = tokens.getOrElse(6) { "" }
             trackerItems.add(
                 TrackerItemCSV(
                     id = UUID.randomUUID().toString(),
@@ -91,7 +92,8 @@ fun InputStream.readFromCSV(): Map<String, List<TrackerItemCSV>> {
                     volume = volume,
                     note = note,
                     localDateTime = localDateTime,
-                    title = title
+                    title = title,
+                    group = group
                 )
             )
         }
@@ -109,5 +111,6 @@ data class TrackerItemCSV(
     val volume: Double = 1.0,
     val note: String = "",
     val localDateTime: String = "",
-    val title: String = ""
+    val title: String = "",
+    val group: String = ""
 )
