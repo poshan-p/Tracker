@@ -38,7 +38,7 @@ fun NavDrawer(
 
     ModalDrawerSheet {
         Text(
-            text = "Tracker",
+            text = "Track & Graph",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(16.dp)
         )
