@@ -114,7 +114,7 @@ fun TrackerDetailScreen(
             }
         } else {
             LazyColumn(
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 48.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.padding(paddingValues)
             ) {

@@ -43,7 +43,6 @@ fun String.toLocalDateTime(dateTimeFormatter: DateTimeFormatter): LocalDateTime 
     LocalDateTime.parse(this, dateTimeFormatter)
 
 object Dialog : DestinationStyle.Dialog {
-    @OptIn(ExperimentalComposeUiApi::class)
     override val properties = DialogProperties(
         usePlatformDefaultWidth = false
     )
@@ -53,14 +52,15 @@ fun csvNameGenerator() =
     "Tracker-${LocalDateTime.now().displayFormat()} ${UUID.randomUUID().toString().take(5)}.csv"
 
 fun OutputStream.writeToCSV(trackers: List<Tracker>) {
-    val header = "Tracker Title, Timestamp, Reps, Weight, Volume, Note, Group\n"
+    val header = "Tracker Title, Timestamp, Reps, Weight, Volume, Note, Group, Primary Tag, Secondary Tag\n"
     write(header.toByteArray())
     var content = ""
     trackers.sortedBy { it.title }.forEach { tracker ->
         tracker.items.forEach { trackerItem ->
             content += "${tracker.title},${
                 trackerItem.localDateTime.toLocalDateTime().displayFormat()
-            },${trackerItem.reps},${trackerItem.weight},${trackerItem.volume},${trackerItem.note},${tracker.group}\n"
+            },${trackerItem.reps},${trackerItem.weight},${trackerItem.volume},${trackerItem.note},${tracker.group.joinToString("/") }," +
+                    "${tracker.primaryTags.joinToString(" ")},${tracker.secondaryTags.joinToString(" ")}\n"
         }
     }
     write(content.toByteArray())
@@ -84,6 +84,8 @@ fun InputStream.readFromCSV(): Map<String, List<TrackerItemCSV>> {
             val volume = tokens[4].toDoubleOrNull() ?: 1.0
             val note = tokens.getOrElse(5) { "" }
             val group = tokens.getOrElse(6) { "" }
+            val primaryTags = tokens.getOrElse(7) { "" }
+            val secondaryTags = tokens.getOrElse(8) { "" }
             trackerItems.add(
                 TrackerItemCSV(
                     id = UUID.randomUUID().toString(),
@@ -93,7 +95,9 @@ fun InputStream.readFromCSV(): Map<String, List<TrackerItemCSV>> {
                     note = note,
                     localDateTime = localDateTime,
                     title = title,
-                    group = group
+                    group = group,
+                    primaryTags = if (primaryTags.isBlank()) listOf() else primaryTags.split(" ".toRegex()),
+                    secondaryTags = if (secondaryTags.isBlank()) listOf() else secondaryTags.split(" ".toRegex())
                 )
             )
         }
@@ -112,5 +116,7 @@ data class TrackerItemCSV(
     val note: String = "",
     val localDateTime: String = "",
     val title: String = "",
-    val group: String = ""
+    val group: String = "",
+    val primaryTags: List<String> = listOf(),
+    val secondaryTags: List<String> = listOf()
 )

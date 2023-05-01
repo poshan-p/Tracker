@@ -57,14 +57,16 @@ class AddEditGroupScreenViewModel @Inject constructor(
     private fun insertOrUpdateTracker() {
         if (!uiState.value.arg.edit) {
             if (_uiState.value.groupAddOrSelect == GroupAddOrSelect.SelectExistingGroup) {
-                insertTracker(_uiState.value.arg.tracker.copy(group = _uiState.value.selectedGroup))
+                insertTracker(_uiState.value.arg.tracker.copy(group = _uiState.value.arg.tracker.group.toMutableList().apply { add(_uiState.value.selectedGroup) }))
             } else {
-                insertTracker(_uiState.value.arg.tracker.copy(group = _uiState.value.name))
+                insertTracker(_uiState.value.arg.tracker.copy(group = _uiState.value.arg.tracker.group.toMutableList().apply { add(_uiState.value.name) }))
             }
         } else {
             _uiState.value.trackers.forEach { tracker ->
-                if (tracker.group == _uiState.value.arg.groupName) {
-                    insertTracker(tracker.copy(group = _uiState.value.name))
+                if (tracker.group.getOrNull(_uiState.value.arg.index) == _uiState.value.arg.groupName) {
+                    insertTracker(tracker.copy(group = tracker.group.toMutableList().apply {
+                        set(_uiState.value.arg.index,_uiState.value.name)
+                    }))
                 }
             }
         }
@@ -72,7 +74,7 @@ class AddEditGroupScreenViewModel @Inject constructor(
 
     private fun getTrackers() =
         repository.getTrackers().onEach { trackers ->
-            val groups = trackers.map { it.group }.distinct().toMutableList().apply {
+            val groups = trackers.map { it.group }.flatten().distinct().toMutableList().apply {
                 remove("")
             }
             _uiState.value = _uiState.value.copy(

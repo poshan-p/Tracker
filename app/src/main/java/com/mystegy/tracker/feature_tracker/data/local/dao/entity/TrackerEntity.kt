@@ -1,5 +1,6 @@
 package com.mystegy.tracker.feature_tracker.data.local.dao.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -16,5 +17,12 @@ data class TrackerEntity(
     val hasDefaultValues: Boolean,
     val defaultRep: Int,
     val defaultWeight: Double,
-    val group: String
+    @ColumnInfo(name = "nestedGroups", defaultValue = "[]")
+    val nestedGroups: List<String>,
+    @ColumnInfo(name = "sort", defaultValue = "0")
+    val sort: Long,
+    @ColumnInfo(name = "primaryTags", defaultValue = "[]")
+    val primaryTags: List<String>,
+    @ColumnInfo(name = "secondaryTags", defaultValue = "[]")
+    val secondaryTags: List<String>
 )

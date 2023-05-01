@@ -3,6 +3,7 @@ package com.mystegy.tracker.feature_tracker.presentation.main.tracker.tracker_sc
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,8 +49,8 @@ fun TrackerCard(
     onDelete: () -> Unit,
     onClick: () -> Unit,
     onAdd: () -> Unit,
-    onMoveToGroup:() -> Unit,
-    onRemoveFromGroup:() -> Unit
+    onMoveToGroup: () -> Unit,
+    onRemoveFromGroup: () -> Unit
 ) {
     var dropdownMenuVisible by remember { mutableStateOf(false) }
     var deleteDialogVisible by remember { mutableStateOf(false) }
@@ -87,7 +88,18 @@ fun TrackerCard(
                 Icon(imageVector = Icons.Default.Description, contentDescription = null)
             },
             title = { Text(text = "Description") },
-            text = { Text(text = tracker.description.ifBlank { "No description" }) },
+            text = {
+                Column {
+                    Text(text = tracker.description.ifBlank { "No description" })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (tracker.primaryTags.isNotEmpty()) {
+                        Text(text = "Primary Tags: ${tracker.primaryTags.joinToString(", ")}")
+                    }
+                    if (tracker.secondaryTags.isNotEmpty()) {
+                        Text(text = "Secondary Tags: ${tracker.secondaryTags.joinToString(", ")}")
+                    }
+                }
+            },
             confirmButton = {
                 TextButton(onClick = {
                     descriptionDialogVisible = false
@@ -152,21 +164,7 @@ fun TrackerCard(
                         )
                     }
                 )
-                if (tracker.group.isBlank()) {
-                    DropdownMenuItem(
-                        text = { Text("Move to group") },
-                        onClick = {
-                            dropdownMenuVisible = false
-                            onMoveToGroup.invoke()
-                        },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.PlaylistAdd,
-                                contentDescription = null
-                            )
-                        }
-                    )
-                } else {
+                if (tracker.group.isNotEmpty()) {
                     DropdownMenuItem(
                         text = { Text("Remove from group") },
                         onClick = {
@@ -181,6 +179,19 @@ fun TrackerCard(
                         }
                     )
                 }
+                DropdownMenuItem(
+                    text = { Text("Move to group") },
+                    onClick = {
+                        dropdownMenuVisible = false
+                        onMoveToGroup.invoke()
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Outlined.PlaylistAdd,
+                            contentDescription = null
+                        )
+                    }
+                )
             }
         }
 
@@ -190,9 +201,6 @@ fun TrackerCard(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(horizontal = 16.dp)
-                .height(64.dp),
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
         )
         Spacer(modifier = Modifier.height(16.dp))
         Row(
@@ -202,7 +210,8 @@ fun TrackerCard(
             Icon(imageVector = Icons.Default.History, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = if (tracker.items.isEmpty()) "No Data" else tracker.items.first().localDateTime.toLocalDateTime().displayFormat(),
+                text = if (tracker.items.isEmpty()) "No Data" else tracker.items.first().localDateTime.toLocalDateTime()
+                    .displayFormat(),
                 fontStyle = FontStyle.Italic,
                 style = MaterialTheme.typography.bodySmall
             )

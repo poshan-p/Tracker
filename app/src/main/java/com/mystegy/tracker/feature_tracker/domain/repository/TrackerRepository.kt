@@ -1,6 +1,7 @@
 package com.mystegy.tracker.feature_tracker.domain.repository
 
 import com.mystegy.tracker.feature_tracker.domain.models.Graph
+import com.mystegy.tracker.feature_tracker.domain.models.Tag
 import com.mystegy.tracker.feature_tracker.domain.models.Tracker
 import com.mystegy.tracker.feature_tracker.domain.models.TrackerAndGraph
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +21,14 @@ interface TrackerRepository {
     fun getTrackerAndGraph(): Flow<List<TrackerAndGraph>>
 
     suspend fun deleteGraphs(graphID: String)
+
+    suspend fun reorderTrackers(trackers: List<Tracker>)
+
+    suspend fun insertTag(tag: Tag)
+
+    suspend fun deleteTag(tag: Tag)
+
+    fun getTags(): Flow<List<Tag>>
 
 
 }

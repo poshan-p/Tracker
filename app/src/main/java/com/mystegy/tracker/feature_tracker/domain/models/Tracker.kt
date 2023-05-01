@@ -12,5 +12,8 @@ data class Tracker(
     val hasDefaultValues: Boolean = false,
     val defaultRep: Int = 1,
     val defaultWeight: Double = 1.0,
-    val group: String = ""
+    val group: List<String> = listOf(),
+    val sort: Long = 0,
+    val primaryTags: List<String> = listOf(),
+    val secondaryTags: List<String> = listOf()
 ): Parcelable

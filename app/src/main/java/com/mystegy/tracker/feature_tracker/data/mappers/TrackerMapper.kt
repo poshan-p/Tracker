@@ -12,7 +12,10 @@ fun TrackerEntity.toTracker(): Tracker {
         hasDefaultValues = this.hasDefaultValues,
         defaultRep = this.defaultRep,
         defaultWeight = this.defaultWeight,
-        group = this.group
+        group = this.nestedGroups,
+        sort = this.sort,
+        primaryTags = this.primaryTags,
+        secondaryTags = this.secondaryTags
     )
 }
 fun Tracker.toTrackerEntity(): TrackerEntity {
@@ -24,6 +27,9 @@ fun Tracker.toTrackerEntity(): TrackerEntity {
         hasDefaultValues = this.hasDefaultValues,
         defaultRep = this.defaultRep,
         defaultWeight = this.defaultWeight,
-        group = this.group
+        nestedGroups = this.group,
+        sort = this.sort,
+        primaryTags = this.primaryTags,
+        secondaryTags = this.secondaryTags
     )
 }

@@ -27,6 +27,7 @@ import com.ramcosta.composedestinations.utils.isRouteOnBackStack
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavDrawer(
     navController: NavController,
@@ -38,7 +39,7 @@ fun NavDrawer(
 
     ModalDrawerSheet {
         Text(
-            text = "Track & Graph",
+            text = "Tracker",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(16.dp)
         )

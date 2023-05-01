@@ -54,10 +54,13 @@ class GroupTrackersScreenViewModel @Inject constructor(
             }
         }
     }
+    fun setEdit(edit: Boolean) {
+        _uiState.value = _uiState.value.copy(edit = edit)
+    }
 
     private fun getTrackers() =
         repository.getTrackers().onEach { trackers ->
-            _uiState.value = _uiState.value.copy(trackers = trackers.filter { it.group == _uiState.value.arg.group })
+            _uiState.value = _uiState.value.copy(trackers = trackers.filter { it.group.getOrNull(_uiState.value.arg.index) == _uiState.value.arg.group }.sortedBy { it.sort })
         }.launchIn(viewModelScope)
 
     private fun deleteTrackers(tracker: Tracker) =
@@ -67,6 +70,6 @@ class GroupTrackersScreenViewModel @Inject constructor(
 
     private fun removeTrackers(tracker: Tracker) =
         viewModelScope.launch(Dispatchers.IO) {
-            repository.insertTracker(tracker = tracker.copy(group = ""))
+            repository.insertTracker(tracker = tracker.copy(group = tracker.group.toMutableList().apply { removeLast() }))
         }
 }

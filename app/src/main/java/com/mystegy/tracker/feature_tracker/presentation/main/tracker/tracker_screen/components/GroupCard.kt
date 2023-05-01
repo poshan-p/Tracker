@@ -1,7 +1,16 @@
+@file:Suppress("DEPRECATION")
+
 package com.mystegy.tracker.feature_tracker.presentation.main.tracker.tracker_screen.components
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.Button
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,7 +33,7 @@ fun GroupCard(
 ) {
     val pagerState = rememberPagerState(0)
     ElevatedCard(onClick = { onClick.invoke(group) }) {
-        Box(modifier = modifier.fillMaxSize()) {
+        Column(modifier = modifier) {
             Text(
                 text = group,
                 style = MaterialTheme.typography.titleSmall,
@@ -35,55 +44,42 @@ fun GroupCard(
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
-            Column {
-                HorizontalPager(
-                    count = trackers.count(),
-                    state = pagerState,
-                    contentPadding = PaddingValues(top = 48.dp),
-                    modifier = Modifier.weight(1f)
-                ) { page ->
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = trackers[page].title,
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .padding(16.dp)
-                                .height(64.dp),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
+            HorizontalPager(
+                count = trackers.count(),
+                state = pagerState,
+                modifier = Modifier.wrapContentHeight()
+            ) { page ->
                 Column(
-                    modifier = Modifier
-                        .padding(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Button(
-                        onClick = { track.invoke(pagerState.currentPage) }, modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp)
-                    ) {
-                        Text(text = "Track")
-                    }
-                    PagerIndicator(
-                        pagerState = pagerState,
+                    Text(
+                        text = trackers[page].title,
+                        style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier
-                            .padding(horizontal =  8.dp),
-                        space = 4.dp,
-                        indicatorSize = 8.dp,
-                        indicatorCount = if (trackers.size < 5) trackers.size else 5,
-                        activeColor = MaterialTheme.colorScheme.primary
-                    ) {
-
-                    }
+                            .align(Alignment.CenterHorizontally)
+                            .padding(16.dp)
+                    )
                 }
+            }
+            Button(
+                onClick = { track.invoke(pagerState.currentPage) }, modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text(text = "Track")
+            }
+            PagerIndicator(
+                pagerState = pagerState,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(horizontal =  16.dp, vertical = 8.dp),
+                space = 4.dp,
+                indicatorSize = 8.dp,
+                indicatorCount = if (trackers.size < 5) trackers.size else 5,
+                activeColor = MaterialTheme.colorScheme.primary
+            ) {
+
             }
         }
     }

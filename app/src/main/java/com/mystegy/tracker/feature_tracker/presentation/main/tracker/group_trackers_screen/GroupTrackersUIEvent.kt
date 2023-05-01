@@ -15,5 +15,6 @@ sealed class GroupTrackersUIEvent {
 data class GroupTrackersUIState(
     val arg: GroupTrackersScreenArgs,
     val trackers: List<Tracker> = listOf(),
-    val groupDeleteDialogVisible: Boolean = false
+    val groupDeleteDialogVisible: Boolean = false,
+    val edit: Boolean = false
 )

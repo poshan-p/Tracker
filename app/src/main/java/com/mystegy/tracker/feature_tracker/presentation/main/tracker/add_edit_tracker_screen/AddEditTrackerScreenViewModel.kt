@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mystegy.tracker.core.utils.ERROR_MESSAGE
+import com.mystegy.tracker.feature_tracker.domain.models.Tag
 import com.mystegy.tracker.feature_tracker.domain.models.Tracker
 import com.mystegy.tracker.feature_tracker.domain.repository.TrackerRepository
 import com.mystegy.tracker.feature_tracker.presentation.main.navArgs
@@ -13,6 +14,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -39,15 +42,18 @@ class AddEditTrackerScreenViewModel @Inject constructor(
     }
 
     init {
-        if (uiState.value.arg.edit) {
+        if (uiState.value.arg.arg.edit) {
             _uiState.value = _uiState.value.copy(
-                title = _uiState.value.arg.tracker.title,
-                description = _uiState.value.arg.tracker.description,
-                hasDefaultValues = _uiState.value.arg.tracker.hasDefaultValues,
-                defaultRep = _uiState.value.arg.tracker.defaultRep.toString(),
-                defaultWeight = _uiState.value.arg.tracker.defaultWeight.toString()
+                title = _uiState.value.arg.arg.tracker.title,
+                description = _uiState.value.arg.arg.tracker.description,
+                hasDefaultValues = _uiState.value.arg.arg.tracker.hasDefaultValues,
+                defaultRep = _uiState.value.arg.arg.tracker.defaultRep.toString(),
+                defaultWeight = _uiState.value.arg.arg.tracker.defaultWeight.toString(),
+                primaryTags = _uiState.value.arg.arg.tracker.primaryTags,
+                secondaryTags = _uiState.value.arg.arg.tracker.secondaryTags
             )
         }
+        getTags()
     }
 
     fun onEvent(event: AddEditTrackerUIEvent) {
@@ -75,6 +81,65 @@ class AddEditTrackerScreenViewModel @Inject constructor(
             is AddEditTrackerUIEvent.Title -> {
                 _uiState.value = _uiState.value.copy(title = event.title)
             }
+
+            is AddEditTrackerUIEvent.AddTagDialogVisibility -> {
+                _uiState.value = _uiState.value.copy(addTagDialogVisible = !_uiState.value.addTagDialogVisible, tagType = event.tagType)
+                if (!_uiState.value.addTagDialogVisible){
+                    _uiState.value = _uiState.value.copy(tag = "")
+                }
+            }
+
+            is AddEditTrackerUIEvent.Tag -> {
+                _uiState.value = _uiState.value.copy(tag = event.tag)
+            }
+
+            is AddEditTrackerUIEvent.AddTag -> {
+                if (event.tag.isNotBlank()) {
+                    when (event.tagType) {
+                        TagType.Primary -> {
+                            _uiState.value = _uiState.value.copy(
+                                primaryTags = _uiState.value.primaryTags.toMutableList()
+                                    .apply { add(event.tag) }.distinct()
+                            )
+                        }
+                        TagType.Secondary -> {
+                            _uiState.value = _uiState.value.copy(
+                                secondaryTags = _uiState.value.secondaryTags.toMutableList()
+                                    .apply { add(event.tag) }.distinct()
+                            )
+                        }
+                    }
+                    viewModelScope.launch(Dispatchers.IO) {
+                        repository.insertTag(Tag(event.tag))
+                    }
+                }
+            }
+            is AddEditTrackerUIEvent.TapTag -> {
+                _uiState.value = _uiState.value.copy(tag = event.tag)
+            }
+
+            is AddEditTrackerUIEvent.RemoveTag -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    repository.deleteTag(event.tag)
+                }
+            }
+
+            is AddEditTrackerUIEvent.RemoveTagLocal -> {
+                when (event.tagType) {
+                    TagType.Primary -> {
+                        _uiState.value = _uiState.value.copy(
+                            primaryTags = _uiState.value.primaryTags.toMutableList()
+                                .apply { remove(event.tag) }
+                        )
+                    }
+                    TagType.Secondary -> {
+                        _uiState.value = _uiState.value.copy(
+                            secondaryTags = _uiState.value.secondaryTags.toMutableList()
+                                .apply { remove(event.tag) }
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -89,18 +154,25 @@ class AddEditTrackerScreenViewModel @Inject constructor(
             }
             repository.insertTracker(
                 Tracker(
-                    id = if (_uiState.value.arg.edit) _uiState.value.arg.tracker.id else 0,
+                    id = if (_uiState.value.arg.arg.edit) _uiState.value.arg.arg.tracker.id else 0,
                     title = _uiState.value.title,
                     description = _uiState.value.description,
-                    items = if (_uiState.value.arg.edit) _uiState.value.arg.tracker.items else listOf(),
+                    items = if (_uiState.value.arg.arg.edit) _uiState.value.arg.arg.tracker.items else listOf(),
                     hasDefaultValues = _uiState.value.hasDefaultValues,
                     defaultRep = defaultReps,
                     defaultWeight = defaultWeight,
-                    group = if (_uiState.value.arg.edit) _uiState.value.arg.tracker.group else ""
+                    group = if (_uiState.value.arg.arg.edit) _uiState.value.arg.arg.tracker.group else _uiState.value.arg.arg.insertFromGroup,
+                    sort = if (_uiState.value.arg.arg.edit) _uiState.value.arg.arg.tracker.sort else 0,
+                    primaryTags = _uiState.value.primaryTags,
+                    secondaryTags = _uiState.value.secondaryTags
                 )
             )
             _uiEvent.emit(AddEditTrackerUIEvent.Done)
         }
-
     }
+
+    private fun getTags() =
+        repository.getTags().onEach { tags ->
+            _uiState.value = _uiState.value.copy(tags = tags.reversed())
+        }.launchIn(viewModelScope)
 }

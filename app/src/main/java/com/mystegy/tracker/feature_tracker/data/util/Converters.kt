@@ -23,4 +23,20 @@ class Converters {
             object : TypeToken<ArrayList<TrackerItem>>(){}.type
         ) ?: "[]"
     }
+
+    @TypeConverter
+    fun fromListOfStringJson(json: String): List<String> {
+        return jsonParser.fromJson<ArrayList<String>>(
+            json,
+            object : TypeToken<ArrayList<String>>(){}.type
+        ) ?: emptyList()
+    }
+
+    @TypeConverter
+    fun toListOfStringJson(items: List<String>) : String{
+        return jsonParser.toJson(
+            items,
+            object : TypeToken<ArrayList<String>>(){}.type
+        ) ?: "[]"
+    }
 }

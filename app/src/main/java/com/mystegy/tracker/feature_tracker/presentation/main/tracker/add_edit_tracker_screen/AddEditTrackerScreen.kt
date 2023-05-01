@@ -2,13 +2,17 @@ package com.mystegy.tracker.feature_tracker.presentation.main.tracker.add_edit_t
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
@@ -34,6 +38,95 @@ fun AddEditTrackerScreen(
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    if (uiState.value.addTagDialogVisible) {
+        AlertDialog(
+            onDismissRequest = {
+
+            },
+            title = {
+                Text(text = "Add ${uiState.value.tagType.name.lowercase()} tag")
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.onEvent(
+                        AddEditTrackerUIEvent.AddTag(
+                            uiState.value.tagType,
+                            uiState.value.tag
+                        )
+                    )
+                    viewModel.onEvent(
+                        AddEditTrackerUIEvent.AddTagDialogVisibility(
+                            uiState.value.tagType
+                        )
+                    )
+                }) {
+                    Text(text = "Add")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    viewModel.onEvent(
+                        AddEditTrackerUIEvent.AddTagDialogVisibility(
+                            uiState.value.tagType
+                        )
+                    )
+                }) {
+                    Text(text = "Cancel")
+                }
+            },
+            text = {
+                Column {
+                    InputTextField(
+                        label = "Tag",
+                        value = uiState.value.tag,
+                        onTextChange = { viewModel.onEvent(AddEditTrackerUIEvent.Tag(it)) },
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        imeAction = ImeAction.Done,
+                        singleLine = true,
+                        capitalization = KeyboardCapitalization.Words,
+                        keyboardType = KeyboardType.Text,
+                        keyboardActions = KeyboardActions(),
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(uiState.value.tags) {
+                            InputChip(
+                                selected = false,
+                                onClick = {
+                                    viewModel.onEvent(AddEditTrackerUIEvent.TapTag(it.tag))
+                                },
+                                label = {
+                                    Text(text = it.tag)
+                                },
+                                trailingIcon = {
+                                    CompositionLocalProvider(
+                                        LocalMinimumTouchTargetEnforcement provides false
+                                    ) {
+                                        IconButton(onClick = {
+                                            viewModel.onEvent(
+                                                AddEditTrackerUIEvent.RemoveTag(
+                                                    it
+                                                )
+                                            )
+                                        }) {
+                                            Icon(
+                                                imageVector = Icons.Default.Cancel,
+                                                contentDescription = null
+                                            )
+                                        }
+                                    }
+
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        )
+    }
+
     LaunchedEffect(Unit) {
         viewModel.isSnackBarShown.collectLatest {
             if (it) {
@@ -54,11 +147,12 @@ fun AddEditTrackerScreen(
     }
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collectLatest { result ->
-            when(result) {
+            when (result) {
                 AddEditTrackerUIEvent.Done -> {
                     navigator.popBackStack()
 
                 }
+
                 else -> {}
             }
         }
@@ -66,7 +160,7 @@ fun AddEditTrackerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "${if (uiState.value.arg.edit) "Edit" else "Add"} Tracker") },
+                title = { Text(text = "${if (uiState.value.arg.arg.edit) "Edit" else "Add"} Tracker") },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
@@ -154,6 +248,97 @@ fun AddEditTrackerScreen(
                     keyboardActions = KeyboardActions(),
                     placeholder = "0.0"
                 )
+            }
+            Row(
+                modifier = Modifier.padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Button(onClick = {
+                    viewModel.onEvent(
+                        AddEditTrackerUIEvent.AddTagDialogVisibility(
+                            TagType.Primary
+                        )
+                    )
+                }) {
+                    Text(text = "Primary Tag")
+                }
+                Button(onClick = {
+                    viewModel.onEvent(
+                        AddEditTrackerUIEvent.AddTagDialogVisibility(
+                            TagType.Secondary
+                        )
+                    )
+                }) {
+                    Text(text = "Secondary Tag")
+                }
+            }
+            if (uiState.value.primaryTags.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(text = "Primary Tags", modifier = Modifier.padding(16.dp))
+                        LazyRow(
+                            contentPadding = PaddingValues(start = 16.dp, bottom = 16.dp, end = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(uiState.value.primaryTags) {
+                                InputChip(
+                                    selected = false,
+                                    onClick = {},
+                                    label = {
+                                        Text(text = it)
+                                    },
+                                    trailingIcon = {
+                                        CompositionLocalProvider(
+                                            LocalMinimumTouchTargetEnforcement provides false
+                                        ) {
+                                            IconButton(onClick = { viewModel.onEvent(AddEditTrackerUIEvent.RemoveTagLocal(it, TagType.Primary)) }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Cancel,
+                                                    contentDescription = null
+                                                )
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            if (uiState.value.secondaryTags.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(text = "Secondary Tags", modifier = Modifier.padding(16.dp))
+                        LazyRow(
+                            contentPadding = PaddingValues(start = 16.dp, bottom = 16.dp, end = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(uiState.value.secondaryTags) {
+                                InputChip(
+                                    selected = false,
+                                    onClick = {},
+                                    label = {
+                                        Text(text = it)
+                                    },
+                                    trailingIcon = {
+                                        CompositionLocalProvider(
+                                            LocalMinimumTouchTargetEnforcement provides false
+                                        ) {
+                                            IconButton(onClick = { viewModel.onEvent(AddEditTrackerUIEvent.RemoveTagLocal(it, TagType.Secondary)) }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Cancel,
+                                                    contentDescription = null
+                                                )
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
             Spacer(modifier = Modifier.weight(1f))
             Button(

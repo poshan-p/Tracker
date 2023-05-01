@@ -2,6 +2,7 @@ package com.mystegy.tracker.feature_tracker.data.local.dao
 
 import androidx.room.*
 import com.mystegy.tracker.feature_tracker.data.local.dao.entity.GraphEntity
+import com.mystegy.tracker.feature_tracker.data.local.dao.entity.TagEntity
 import com.mystegy.tracker.feature_tracker.data.local.dao.entity.TrackerAndGraphEntity
 import com.mystegy.tracker.feature_tracker.data.local.dao.entity.TrackerEntity
 import kotlinx.coroutines.flow.Flow
@@ -41,9 +42,16 @@ interface TrackerDao {
     @Query("DELETE FROM graphentity WHERE graphID = :graphID")
     suspend fun deleteGraph(graphID: String)
 
+    @Update
+    suspend fun updateTrackers(trackers: List<TrackerEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTag(tagEntity: TagEntity)
 
+    @Delete
+    suspend fun deleteTag(tagEntity: TagEntity)
 
-
+    @Query("SELECT * FROM tagentity")
+    fun getTags(): Flow<List<TagEntity>>
 
 }

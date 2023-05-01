@@ -31,6 +31,7 @@ import com.mystegy.tracker.core.utils.csvNameGenerator
 import com.mystegy.tracker.feature_tracker.domain.models.AddEditGraphScreenArgs
 import com.mystegy.tracker.feature_tracker.domain.models.AddEditGraphScreenArgsParcelable
 import com.mystegy.tracker.feature_tracker.domain.models.AddEditTrackerScreenArgs
+import com.mystegy.tracker.feature_tracker.domain.models.AddEditTrackerScreenWrapperArg
 import com.mystegy.tracker.feature_tracker.domain.models.Nav
 import com.mystegy.tracker.feature_tracker.presentation.main.NavGraphs
 import com.mystegy.tracker.feature_tracker.presentation.main.destinations.*
@@ -260,10 +261,14 @@ fun MainScreen(
                                         navController.navigate(
                                             AddEditTrackerScreenDestination(
                                                 AddEditTrackerScreenArgs(
-                                                    group = ""
+                                                    AddEditTrackerScreenWrapperArg(
+                                                        group = "",
+                                                        insertFromGroup = listOf()
+                                                    )
                                                 )
                                             )
                                         )
+
                                     }) {
                                         Icon(
                                             imageVector = Icons.Default.Add,

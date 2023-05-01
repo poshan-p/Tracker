@@ -1,6 +1,5 @@
 package com.mystegy.tracker.feature_tracker.presentation.main.main.main_screen
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,9 +11,13 @@ import com.mystegy.tracker.feature_tracker.domain.models.TrackerItem
 import com.mystegy.tracker.feature_tracker.domain.repository.TrackerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.io.OutputStream
 import javax.inject.Inject
@@ -84,6 +87,9 @@ class MainScreenViewModel @Inject constructor(
     fun readFromCSV(inputStream: InputStream) = viewModelScope.launch(Dispatchers.Default) {
         val result = inputStream.readFromCSV()
         var group = ""
+        var primaryTag: List<String> = listOf()
+        var secondaryTag: List<String> = listOf()
+
         result.forEach { value ->
             insertTracker(
                 Tracker(
@@ -92,6 +98,8 @@ class MainScreenViewModel @Inject constructor(
                     description = "",
                     items = value.value.map {
                         group = it.group
+                        primaryTag = it.primaryTags
+                        secondaryTag = it.secondaryTags
                         TrackerItem(
                             id = it.id,
                             reps = it.reps,
@@ -104,7 +112,9 @@ class MainScreenViewModel @Inject constructor(
                     hasDefaultValues = false,
                     defaultRep = 1,
                     defaultWeight = 1.0,
-                    group = group
+                    group = if (group.isNotBlank()) group.split("/".toRegex()) else listOf(),
+                    primaryTags = primaryTag,
+                    secondaryTags = secondaryTag
                 )
             )
         }

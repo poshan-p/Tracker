@@ -5,8 +5,14 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class AddEditTrackerScreenArgs(
+    val arg: AddEditTrackerScreenWrapperArg
+): Parcelable
+
+@Parcelize
+data class AddEditTrackerScreenWrapperArg(
     val tracker: Tracker = Tracker(),
     val group: String,
+    val insertFromGroup: List<String>,
     val edit: Boolean = false
 ): Parcelable
 
@@ -37,6 +43,13 @@ data class AddEditGraphScreenArgs(
 
 @Parcelize
 data class GroupTrackersScreenArgs(
+    val index: Int,
+    val group: String
+): Parcelable
+
+@Parcelize
+data class ReorderTrackersScreenArgs(
+    val index: Int,
     val group: String
 ): Parcelable
 
@@ -44,7 +57,8 @@ data class GroupTrackersScreenArgs(
 data class AddEditGroupScreenArgs(
     val groupName: String,
     val edit: Boolean,
-    val tracker: Tracker
+    val tracker: Tracker,
+    val index: Int
 ): Parcelable
 enum class Nav(val label: String) {
     Tracker("Tracker"),
@@ -60,5 +74,5 @@ data class GraphCustom(
 
 enum class GroupAddOrSelect(val label: String){
     AddNewGroup("Add New Group"),
-    SelectExistingGroup("Select Existing Group")
+    SelectExistingGroup("Select Existing Group Names")
 }
