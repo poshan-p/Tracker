@@ -25,7 +25,7 @@ Features
 Screenshots
 -----------
 
-<p><img src="https://raw.githubusercontent.com/poshan-p/Tracker/master/1.PNG" alt="Screenshot 1" style="width: 300px;">&nbsp;<img src="https://raw.githubusercontent.com/poshan-p/Tracker/master/2.PNG" alt="Screenshot 2" style="width: 300px;"><br><br><img src="https://raw.githubusercontent.com/poshan-p/Tracker/master/3.PNG" alt="Screenshot 3" style="width: 300px;">&nbsp;<img src="https://raw.githubusercontent.com/poshan-p/Tracker/master/4.PNG" alt="Screenshot 4" style="width: 300px;"></p>
+<p><img src="https://raw.githubusercontent.com/poshan-p/Tracker/master/1.PNG" alt="Screenshot 1" style="width: 300px;">&nbsp;<img src="https://raw.githubusercontent.com/poshan-p/Tracker/master/2.PNG" alt="Screenshot 2" style="width: 300px;"><br><img src="https://raw.githubusercontent.com/poshan-p/Tracker/master/3.PNG" alt="Screenshot 3" style="width: 300px;">&nbsp;<img src="https://raw.githubusercontent.com/poshan-p/Tracker/master/4.PNG" alt="Screenshot 4" style="width: 300px;"></p>
 
   
 
